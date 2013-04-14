@@ -30,7 +30,6 @@ fi;
 cd $DEST/src
     ls -l
 
-    
     #
     # do you need to get the source? 
     #
@@ -57,7 +56,8 @@ cd $DEST/src
     done
 
     gzip LOG;
-    cp  LOG.gz $DEST/.apriori
+    mv LOG.gz $DEST/__apriori/
+    curl https://gist.github.com/gleecology/1691853 > show_cpan_install.sh
 
     cd $DEST
 
