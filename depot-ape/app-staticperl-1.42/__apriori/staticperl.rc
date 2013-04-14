@@ -1,0 +1,58 @@
+
+# be sure to export STATICPERLRC  to this file
+
+EMAIL=help@gleeco.com
+
+CPAN=http://www.perl.com/CPAN
+
+STATICPERL=$DEPOT/app-staticperl-1.43
+
+# PERL_VERSION=5.12.3
+PERL_VERSION=5.8.9
+
+DLCACHE=$DEPOT/app-staticperl-1.43/src
+
+# PERL_CONFIGURE=
+
+# -Os -ffunction-sections -fdata-sections -finline-limit=8 -mpush-args -mno-inline-stringops-dynamically -mno-align-stringops
+# PERL_OPTIMIZE="-ffunction-sections -fdata-sections -finline-limit=8 -ffast-math -mpush-args -mno-inline-stringops-dynamically -mno-align-stringops -mno-ieee-fp -fomit-frame-pointer -march=i586 -mtune=core2"
+PERL_OPTIMIZE="-Os -O3 -ffunction-sections -fdata-sections -finline-limit=8 -ffast-math -mpush-args -mno-inline-stringops-dynamically -mno-align-stringops -mno-ieee-fp -fomit-frame-pointer -mtune=core2"
+
+
+
+#
+# localized gleeco stuff: 
+#
+postinstall() {
+        CPAN_MODS=`grep -v "#" __apriori/cpan_module_list.txt`; 
+        instcpan $CPAN_MODS
+        # instcpan Net::SSLeay
+        # hack to get Net::SSLeay to grok the lib
+          chmod u+w "$PERL_PREFIX"/lib/auto/Net/SSLeay/extralibs.ld
+          echo " -ldl" >>"$PERL_PREFIX"/lib/auto/Net/SSLeay/extralibs.ld
+          chmod u-w "$PERL_PREFIX"/lib/auto/Net/SSLeay/extralibs.ld
+}
+
+# these are needed by AnyEvent::Socket 
+#   d_getprotobyname_r d_getprotobynumber_r d_getprotoent_r d_endprotoent_r 
+
+#preconfigure() {
+#           for sym in \
+#              d_getgrnam_r d_endgrent d_endgrent_r d_endhent \
+#              d_endhostent_r d_endnent d_endnetent_r d_endpent \
+#              d_endpwent d_endpwent_r d_endsent \
+#              d_endservent_r d_getgrent d_getgrent_r d_getgrgid_r \
+#              d_getgrnam_r d_gethbyaddr d_gethent d_getsbyport \
+#              d_gethostbyaddr_r d_gethostbyname_r d_gethostent_r \
+#              d_getlogin_r d_getnbyaddr d_getnbyname d_getnent \
+#              d_getnetbyaddr_r d_getnetbyname_r d_getnetent_r \
+#              d_getpent d_getpbyname d_getpbynumber d_getpwent \
+#              d_getpwent_r d_getpwnam_r d_getpwuid_r d_getsent \
+#              d_getservbyname_r d_getservbyport_r d_getservent_r \
+#              d_getspnam_r d_getsbyname
+#              # d_gethbyname
+#           do
+#              PERL_CONFIGURE="$PERL_CONFIGURE -U$sym"
+#           done
+#     }
+

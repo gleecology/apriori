@@ -1,0 +1,108 @@
+#!/bin/bash
+
+#
+# do.install auto-generated from /home/gleeco/code/proj/despotic/bin/despotic v.1.0 on Fri Feb 17 11:17:16 2012  
+#  this script is the main build script for the package
+#   It is intended as a generic placeholder to build however you see fit (eg. bash, perl, make, whatever!)
+#   as such, it should be left mod 0644 thus manually forcing the issue.  
+# 
+
+
+# DEPOT should be set in your ENV; ie.  export=DEPOT=/path/opt/depot
+#
+# mkdir -p $DEPOT/apache_modperl-2.2.21/__apriori  $DEPOT/apache_modperl-2.2.21/src
+
+if [ ! $DEPOT ]; then
+    echo "WARNING -- env DEPOT not set; quitting";
+    exit
+fi
+
+PKG=apache_modperl-2.2.21
+DEST=$DEPOT/$PKG
+
+SRC=httpd-2.2.21
+SRC_GZ=$SRC.tar.gz
+
+MP=mod_perl-2.0.5
+MP_GZ=$MP.tar.gz
+
+# **VERY** specific to avoid pollution 
+PERL_EXE=/home/gleeco/opt/depot/perl-5.8.9/bin/perl
+
+
+# apache: reused in MP build too
+
+AP_OPTS="--prefix=$DEST   --with-included-apr \
+ --disable-charset-lite --disable-mod-auth   \
+ --disable-userdir   --disable-imap          \
+ --enable-rewrite    --enable-proxy          \
+ --enable-expires    --enable-deflate        \
+ --enable-headers                            \
+ --with-mpm=prefork"
+
+
+cd $DEST/src
+    #
+    # do you need to get the source? 
+    #
+    if [ ! -f $SRC_GZ ]; then 
+        wget http://download.nextag.com/apache//httpd/$SRC_GZ 
+    fi
+
+    if [ ! -f $MP_GZ ]; then 
+        wget http://perl.apache.org/dist/$MP_GZ
+    fi
+
+    tar zxf $SRC_GZ
+    tar zxf $MP_GZ
+
+    # 
+    # APACHE: configure / build / install
+    #
+
+   cd  $DEST/src/$SRC
+
+    echo   "./configure $AP_OPTS"                   2>&1 |tee log.opts
+    ./configure $AP_OPTS                            2>&1 |tee log.conf
+    make                                            2>&1 |tee log.make
+    make install                                    2>&1 |tee log.install
+
+    LOG=$DEST/__apriori/LOG
+
+    # document the install in a log
+    for i in opts conf make install; do
+        echo "----log.$i----"  >> $LOG
+        cat log.$i             >> $LOG
+    done
+
+    # MOD_PERL: configure / build / install
+    #
+
+    cd $DEST/src/$MP
+
+    echo "$PERL_EXE Makefile.PL MP_USE_STATIC=1 MP_AP_PREFIX=$DEST/src/$SRC MP_AP_DESTDIR=$DEST MP_AP_CONFIGURE=\"$AP_OPTS\""    2>&1 |tee log.opts
+    $PERL_EXE Makefile.PL MP_USE_STATIC=1 MP_AP_PREFIX=$DEST/src/$SRC MP_AP_DESTDIR=$DEST MP_AP_CONFIGURE="$AP_OPTS"            2>&1 |tee log.conf
+
+    # HACK!  patch this file! --note that gets created as part of config
+    # see: http://www.gossamer-threads.com/lists/modperl/modperl/97982?do=post_view_threaded#97982
+    perl -pi -e 's!\Qconst void *modperl_hack_thx_interp_get = (const void *)modperl_thx_interp_get;\E.*!/* $1 */!' ./src/modules/perl/modperl_exports.c
+    perl -pi -e 's!\Qconst void *modperl_hack_thx_interp_set = (const void *)modperl_thx_interp_set;\E.*!/* $1 */!' ./src/modules/perl/modperl_exports.c
+
+
+    make                    2>&1 |tee log.make
+    make install            2>&1 |tee log.install
+
+
+    # document the install in a log
+    for i in opts conf make install; do
+        echo "----log.$i----"  >> $LOG
+        cat log.$i             >> $LOG
+    done
+
+    gzip $LOG
+
+    cd $DEST
+
+    # clean up 
+    rm -rf htdocs/ logs/ manual/ cgi-bin/ src/
+    

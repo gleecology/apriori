@@ -1,0 +1,16 @@
+    
+
+perl-5.8.9/README
+    created Mon Feb  6 13:34:46 2012    by gleeco
+
+vanilla install
+.apriori/do.install should take care of things.
+
+NB
+* must install perl before apache/mod_perl
+* must run do.cpan_install.pl <module_list_file> after the apache install
+
+It seems like apache+mod_perl+perl all need to be the same instal together. 
+Some testing w/ swapping out perl installs (via opt_depot)  shows some wonkiness
+
+

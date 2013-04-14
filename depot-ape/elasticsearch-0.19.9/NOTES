@@ -1,0 +1,28 @@
+
+-------------------------------------
+installation for elasticsearch-0.9.18
+-------------------------------------
+
+# as root -- prepared -- install JDK headless for ubuntu
+apt-get update
+apt-get install openjdk-6-jre-headless
+
+# get the distro 
+VERSION=0.19.9
+wget https://github.com/downloads/elasticsearch/elasticsearch/elasticsearch-$VERSION.tar.gz
+tar zxvf elasticsearch-$VERSION.tar.gz
+mv elasticsearch $DEPOT/elasticsearch-$VERSION
+
+# be sure to comment out any old versions when ready --via EXCLUDE.txt
+opt_depot -v  
+
+# setup of our own config/elasticsearch.yaml
+# --mainly for port 
+
+# include our own init.d
+
+# install the UI/GUI  
+# see - http://mobz.github.com/elasticsearch-head/
+$DEPOT/elasticsearch-$VERSION/bin/plugin -install mobz/elasticsearch-head
+
+# perl client activity is done via CPAN module ElasticSearch

@@ -1,0 +1,8 @@
+
+
+ 
+   my @d;
+   eval ' @d = static::list() ';
+   @d or die "no static libs";
+   print "$_\n" for sort @d;
+   print "LIB_CT=", scalar @d,"\n";

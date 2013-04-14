@@ -1,0 +1,13 @@
+    
+kyototycoon-0.9.53/README
+    created Thu Feb 16 12:39:08 2012
+    by gleeco
+
+compilation orig. on ord25 was a PitA b/c of 2 files in src distro: 
+    configure
+    configure.in
+
+    ...both of which prepend /usr/local for headers and libs.
+    As it were, there were already 2 versions found over there.
+     
+This version was compiled against kyotocabinet-1.2.72

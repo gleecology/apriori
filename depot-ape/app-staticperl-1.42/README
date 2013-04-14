@@ -1,0 +1,56 @@
+Mon Mar 12 18:09:22 PDT 2012
+
+
+build some staticperl!
+
+e-z intro: 
+
+* use cpan to add App::Staticperl  to existing perl lib ( if you control that installation) 
+
+* -OR- use .apriori/do.install to create a localized version ( creates link to staticperl in the $DEPOT/$PKG dir) 
+
+* you can kill the install if it starts long running test; it basically is starting a build of perl in ~/.staticperl by default
+
+* after, staticperl is another script just like perl, prove, or cpan.  
+
+* export STATICPERLRC=/path/to/.apriori/staticperl.rc
+
+* mkdir for what is $STATICPERL dest via the rc file. 
+
+* run the build/install: 
+    staticperl install 
+
+* update the select modules we want present & available:
+    bash .apriori/do.load_staticperl_cpan <file>    # defaults to our list at cpan_module_list.txt
+
+* create the binary using a 'bundle' config (nb: uses cwd as working dir for some files and final output binary 'perl'):
+    staticperl mkperl .aprirori/bundle.01
+        # bundle.01:  select modules; NB: this is NOT the same as cpan_module_list.txt --need *ALL* the dependent modules too (rtfm)
+        # bundle.02:   the kitchen sink!  everything loads in.  Bigger footprint but very usable throughout
+
+* check out your binary:
+    ldd ./perl
+    ./perl -V
+    ( cd .apriori && ../perl ./do.check_perl  )
+    ( cd .apriori && ../perl ./do.static_check )
+
+* can't really call it done until you have tested it in your env and know that it doesn't barf. 
+
+  Obvious glitches: 
+    * @INC is nulled out when it starts; but can be modified at runtime with 'use lib ...'
+    
+
+* putting the binary in GIT/SVN? consider using upx to compress/store this. 
+    this should drop 12MB file down to 4MB (ymmv...)
+
+
+
+----------development logging-----------------
+
+perl-5.8.9 is the smallest distro to use. Saves 1-2MB overall in final binary image
+
+
+
+
+
+

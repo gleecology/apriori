@@ -1,0 +1,16 @@
+#/bin/bash 
+
+
+CPAN_MOD_FILE='cpan_module_list.txt';
+
+if [ "$1" ]; then
+    CPAN_MOD_FILE="$1";
+fi
+CPAN_MOD_LIST='';
+
+for c in `cat $CPAN_MOD_FILE .txt| grep -v "#" `; do 
+    CPAN_MOD_LIST="$CPAN_MOD_LIST $c ";
+done;
+
+echo " staticperl  instcpan $CPAN_MOD_LIST"
+

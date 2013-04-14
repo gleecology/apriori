@@ -1,0 +1,66 @@
+Config   
+Errno   
+Encode   
+Getopt::Long   
+Digest::MD5   
+Time::ParseDate   
+Encode::Unicode   
+#List::Util
+#Scalar::Util   
+IO::Socket::INET6
+Net::SSLeay
+IO::Socket::SSL
+EV   
+EV::Loop::Async   
+Digest::SHA
+Digest::MD6 
+Digest::HMAC_MD6 
+Crypt::Twofish2   
+Coro 
+# Array::Heap   
+Module::Build 
+Convert::Scalar   
+Compress::Zlib
+Compress::LZF   
+Compress::LZ4   
+JSON::XS   
+Linux::Inotify2   
+common::sense   
+Guard   
+Async::Interrupt   
+AnyEvent   
+Object::Event
+Coro::AnyEvent 
+AnyEvent::AIO   
+AnyEvent::HTTP   
+AnyEvent::HTTPD
+AnyEvent::Handle   
+AnyEvent::FastPing   
+AnyEvent::Watchdog 
+AnyEvent::TLS
+MIME::Base64 
+IO::AIO   
+Net::Interface 
+AnyEvent::MP   
+Cache::Memcached::Fast   
+Sort::XS 
+Date::Calc 
+Date::Calc::XS 
+URL::Encode 
+URL::Encode::XS 
+URI::Escape::XS 
+# NB: conflicts with install of Feersum
+# HTTP::Parser2::XS 
+String::Numeric 
+String::Numeric::XS 
+XML::Fast 
+Text::CSV_XS 
+# unused at this time
+#Bit::Vector 
+Array::Shuffle 
+Coro::MP
+# holy shit this is buggy!
+# Data::MessagePack
+Data::MessagePack::Stream
+Feersum
+# Bloom::Faster

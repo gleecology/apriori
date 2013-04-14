@@ -1,0 +1,109 @@
+#!/bin/bash
+
+#
+# do.install auto-generated from /home/gleeco/opt/bin/despotic v.1.0 on Fri Feb 10 10:37:29 2012  
+#  this script is the main build script for the package
+#   It is intended as a generic placeholder to build however you see fit (eg. bash, perl, make, whatever!)
+#   as such, it should be left mod 0644 thus manually forcing the issue.  
+# 
+
+
+# DEPOT should be set in your ENV; ie.  export=DEPOT=/path/opt/depot
+#
+# mkdir -p $DEPOT/sperl-5.8.9a/__apriori  $DEPOT/sperl-5.8.9a/src
+
+if [ ! $DEPOT ]; then
+    echo "WARNING -- env DEPOT not set; quitting";
+    exit
+fi
+
+PKG=sperl-5.8.9a
+SRC_DIR=App-Staticperl-1.4
+SRC=$SRC_DIR.tar.gz 
+DEST=$DEPOT/$PKG
+BUILD_DIR=$DEST/src/staticperl-workshop
+
+APRIORI_DIR=$DEPOT/$PKG/__apriori
+BUNDLE=$APRIORI_DIR/bundle.basic
+
+mkdir -p $BUILD_DIR;
+
+
+main() {
+
+    install_src
+
+    #
+    # do you need to get the source? 
+    # setup ENV 
+    export PERL_VERSION='5.8.9'
+    export STATICPERL=$BUILD_DIR
+    export DLCACHE=$BUILD_DIR/downloads
+
+
+    # which module list do we want/use 
+    # ?? export EXTRA_MODULES=`grep -v "#" $DEPOT/$SRC/__apriori/CPAN_MODULE_LIST.txt`;
+
+
+    # put togehter everyting in to $BUILD_DIR
+    staticperl install               2>&1 |tee log.build
+
+
+    CPAN=`grep "^use " $BUNDLE | perl -ane 'print "$1 " if m@use (\S+)@ ';
+
+    staticperl instcpan $CPAN                       2>&1 | tee -a log.build
+
+    staticperl mkperl -v \
+        --static --strip ppi --perl  \ 
+        $BUNDLE                                     2>&1 | tee -a log.build
+
+    ldd $BUILD_DIR/perl
+
+    # document the install in a log
+    for i in conf build install; do
+        echo "----log.$i----"  >> LOG
+        cat log.$i             >> LOG
+    done
+
+    gzip LOG;
+    cp  LOG.gz $APRIORI_DIR
+
+    cd $DEST
+
+    # clean up 
+    # rm -rf $DEST/src/
+
+}
+
+
+
+
+install_src() {
+
+    ok=`which staticperl`;
+
+    $ok && return;
+
+    cd $DEST/src
+    if [ ! -f $SRC ]; then 
+        wget http://www.cpan.org/modules/by-authors/Marc_Lehmann/$SRC
+    fi
+
+    tar zxvf $SRC
+    cd  $DEST/src/$SRC_DIR
+
+    ls -l;
+
+    perl Makefile.PL                                2>&1 |tee log.conf
+    make                                            2>&1 |tee -a log.conf
+    make install                                    2>&1 |tee -a log.conf
+
+    # should be linked in 
+    opt_depot -v 
+
+}
+
+
+
+main();
+

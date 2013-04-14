@@ -1,0 +1,68 @@
+#!/bin/bash
+
+#
+# do.install auto-generated from /home/gleeco/opt/bin/despotic v.0.01 on Mon Feb  6 13:34:46 2012  
+#  this script is the main build script for the package
+#   It is intended as a generic placeholder to build however you see fit (eg. bash, perl, make, whatever!)
+#   as such, it should be left mod 0644 thus manually forcing the issue.  
+# 
+
+
+# DEPOT should be set in your ENV; ie.  export=DEPOT=/path/opt/depot
+#
+# mkdir -p $DEPOT/perl-5.8.9/.apriori  $DEPOT/perl-5.8.9/src
+
+
+
+if [ ! $DEPOT ]; then
+    echo "WARNING -- env DEPOT not set; quitting";
+    exit
+fi
+
+PKG=perl-5.8.9
+DEST=$DEPOT/$PKG
+SRC=$PKG.tar.gz
+
+if [ ! -d $DEST/src ]; then
+    mkdir -p $DEST/src
+fi;
+
+cd $DEST/src
+    ls -l
+
+    
+    #
+    # do you need to get the source? 
+    #
+    if [ ! -f $SRC ]; then
+        wget http://www.cpan.org/src/5.0/$SRC
+    fi
+
+    tar zxvf $SRC
+    cd  $DEST/src/perl-5.8.9
+
+    # 
+    # configure / build / install
+    #
+    echo  "./Configure -des -Dprefix=$DEST"            2>&1 |tee log.opts
+    sh ./Configure -des -Dprefix=$DEST              2>&1 |tee log.conf
+
+    make                                            2>&1 |tee log.make
+    make install                                    2>&1 |tee log.install
+
+    # document the install in a log
+    for i in opts conf make install; do
+        echo "----log.$i----"  >> LOG
+        cat log.$i             >> LOG
+    done
+
+    gzip LOG;
+    cp  LOG.gz $DEST/__apriori
+
+    cd $DEST
+
+    # clean up 
+    # rm -rf $DEST/src
+    echo "leaving $DEST/src --manually remove this when you care to"
+
+

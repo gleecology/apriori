@@ -1,0 +1,52 @@
+#!/bin/bash
+
+#
+# do.install auto-generated from /home/gleeco/code/proj/despotic/bin/despotic v.1.0 on Tue Mar 13 10:03:56 2012  
+#  this script is the main build script for the package
+#   It is intended as a generic placeholder to build however you see fit (eg. bash, perl, make, whatever!)
+#   as such, it should be left mod 0644 thus manually forcing the issue.  
+# 
+
+
+# DEPOT should be set in your ENV; ie.  export=DEPOT=/path/opt/depot
+#
+# mkdir -p $DEPOT/app-staticperl-1.42/__apriori  $DEPOT/app-staticperl-1.42/src
+
+if [ ! $DEPOT ]; then
+    echo "WARNING -- env DEPOT not set; quitting";
+    exit
+fi
+
+PKG=app-staticperl-1.43
+DEST=$DEPOT/$PKG
+        
+SRC=App-Staticperl-1.43
+SRC_Z=$SRC.tar.gz
+
+
+if [ ! -d $DEST ]; then 
+    mkdir -p $DEST
+fi
+
+
+cd $DEST/
+
+    #
+    # do you need to get the source? 
+    #
+    if [ ! -f $SRC_Z ]; then 
+        wget  http://search.cpan.org/CPAN/authors/id/M/ML/MLEHMANN/$SRC_Z 
+    fi
+
+    tar zxvf $SRC_Z
+    cd  $DEST/$SRC
+
+    # 
+    # configure / build / install
+    #
+    perl Makefile.PL
+    make
+    cd $DEST 
+    ln -s  $DEST/$SRC/bin/staticperl  .
+
+    

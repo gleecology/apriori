@@ -1,0 +1,297 @@
+#!/usr/bin/env perl
+
+use JSON::XS;
+
+BEGIN {
+    $ENV{APE_BASE}  ||= '/home/gleeco/';
+    $ENV{DEPOT}     ||= '/home/gleeco/opt/depot';
+};
+
+
+our %T;
+our $D   = $ENV{DEBUG} || 0;
+
+
+sub main {
+    for ( sort keys %T) { 
+        $D and _warns( " starting test $_ " );
+        my $x = $T{$_}->();
+        $x = $x == 1 ? 'ok' : 'fail';
+        _warns(  "$_\t\t$x " );
+    }
+}
+
+sub _warns {  print STDERR $_[0],"\n", ( ref $_[1] )? JSON::XS->new->pretty->allow_nonref->allow_unknown->encode($_[1]) : '' };
+
+
+{
+ my $K = 'gzip'; 
+ $T{$K} = sub { 
+    my ($in,$out,$buf);
+    $in     = "foo bar baz " x 50; 
+    use Compress::Zlib;
+    eval ' use Compress::Zlib (); 
+            $buf    = Compress::Zlib::memGzip( $in ) or die $gzerrno;
+            $out    = Compress::Zlib::memGunzip($buf)  or die $gzerrno;
+    ';
+    $@ and _warns( " $K gzerrno error: $@ " ); 
+    $in and $in eq $out
+            ? 1
+            : 0;
+ }
+}
+
+
+
+
+{
+ my $K = 'staticperl_list'; 
+ $T{$K} = sub { 
+   my @d;
+    eval ' @d = static::list() ';
+    $D and _warns( " $K err: $@ " ) if $@;
+    $D and _warns("  $K static::list ct=" . scalar @d );
+    $#d > 1
+            ? 1
+            : 0;
+ }
+}
+
+{ 
+ my $K = 'cpan_modules';
+ $T{$K} = sub { 
+    my $file =  'cpan_module_list.txt';
+    -f $file or $file = "./__apriori/$file";
+    my @F = `cat $file`;
+    my %skip = map { $_ => 1 } qw(
+     Module::Build   
+    );
+    my %f;
+    for (@F){ 
+        m@^\s*#@        and next;
+        m@[a-z]+@      or next;
+        m@(\S+)@       or next;
+        $skip{$1} and next;
+        $f{$1}++;
+    }
+    
+    keys %f or return 0;
+        
+    my $x; 
+    
+    for (sort keys %f ) {
+        chomp;
+        # _warns(" check: $_");
+        no strict 'refs';
+        eval "  use $_; ";
+        $@ and _warns( " $K  module=$_ error: $@ "  );
+        $@ and next;
+        $x++;
+    }
+    ( $x == scalar keys %f )
+        ? 1 
+        : 0;
+ };
+}
+
+
+
+{ 
+ my $K = 'perl_gethost';
+ $T{$K} = sub { 
+    my @f;
+    my $x; 
+    $x++ if scalar gethostbyname('localhost');
+    $x++ if scalar getprotobyname('tcp');
+    $x == 2
+        ? 1 
+        : 0;
+ };
+}
+
+
+
+{ 
+ my $K = 'perl_getpw';
+ $T{$K} = sub { 
+    my @f;
+    my $x; 
+    $x++ if scalar getpwnam('daemon');
+    $x++ if scalar getpwnam('nobody');
+    $x == 2
+        ? 1 
+        : 0;
+ };
+}
+
+
+
+
+{ 
+ my $K = 'ape_factory';
+$T{$K} = sub { 
+    my @f;
+    eval '     
+        require "$ENV{APE_BASE}/code/stem/conf/globals.cfg";
+        use lib "$ENV{APE_BASE}/code/stem/lib";
+        use Factory;
+        use Std::Util qw(_warns);
+            
+        @f = Factory::load_factory( "net" );
+    ';
+    $@ and _warns( " $K error: $@ " );
+    $@ and return 0;
+
+    $D and _warns("  $K factory net ct=", \@f );
+    $#f > 1
+            ? 1
+            : 0;
+
+ };
+}
+
+{ 
+ my $K = 'ae_http';
+ $T{$K} = sub { 
+    my $url =  "http://www.search.com/robots.txt";
+    my $x;
+
+    eval {use AnyEvent; use AnyEvent::HTTP};
+
+    $@          and _warns( " $K error: $@" );
+    return 0    if $@;
+
+    my $cv = AE::cv;
+
+    my $g = AnyEvent::HTTP::http_get( $url, sub { 
+        $x++    if $_[0];
+        $x++    if ref $_[1] eq 'HASH' and $_[1]->{Status} eq '200';
+        $D      and _warns(" $K --got url $url ", $_[1] );
+        $cv->send;
+    });
+    $cv->wait;
+    return ( $x == 2 )
+        ? 1
+        : 0;
+ };   
+}
+{ 
+ my $K = 'ae_https';
+ $T{$K} = sub { 
+    my $url =  "https://www.google.com/";
+    my $x;
+
+    eval {use AnyEvent; use AnyEvent::HTTP};
+
+    $@          and _warns( " $K error: $@" );
+    return 0    if $@;
+
+    my $cv = AE::cv;
+
+    my $g = AnyEvent::HTTP::http_get( $url, sub { 
+        $x++    if $_[0];
+        $x++    if ref $_[1] eq 'HASH' and $_[1]->{Status} eq '200';
+        $D      and _warns(" $K --got url $url ", $_[1] );
+        $cv->send;
+    });
+    $cv->wait;
+    return ( $x == 2 )
+        ? 1
+        : 0;
+ };   
+}
+
+
+main();
+
+1;
+
+__END__
+
+sub load_smart{
+    eval '
+    
+    use common::sense;
+    use JSON::XS;
+    use Cache::Memcached::Fast;
+    use EV;
+    use Coro;
+    use AnyEvent;
+    use AnyEvent::DNS;
+    use AnyEvent::HTTP;
+    use Coro::EV;
+    use Coro::AnyEvent;
+    use Coro::Semaphore;
+    use Digest::MD5         ();
+    use String::Numeric     ();
+    use Scalar::Util        ();
+
+    ';
+    _warns( " smart: " . ( $@ ? " error: $@"  : " ok " ) );
+}
+
+
+sub load_smart_simple {
+    eval '
+use JSON::XS                    ();
+use Digest::MD5                 ();
+use URL::Encode                 ();
+use Time::HiRes                 ();
+use Cache::Memcached::Fast;
+    ';
+    _warns( " smart: " . ( $@ ? " error: $@"  : " ok " ) );
+}
+
+use Config  ;
+use Errno  ;
+use Encode  ;
+use Getopt::Long  ;
+use Digest::MD5  ;
+use Time::ParseDate  ;
+use Encode::Unicode  ;
+use Scalar::Util  ;
+use EV  ;
+use EV::Loop::Async  ;
+use Crypt::Twofish2  ;
+use Coro;
+use Array::Heap  ;
+use Convert::Scalar  ;
+use Compress::LZF  ;
+use JSON::XS  ;
+use Linux::Inotify2  ;
+use common::sense  ;
+use Guard  ;
+use Async::Interrupt  ;
+use AnyEvent  ;
+use Coro::AnyEvent;
+use AnyEvent::AIO  ;
+use AnyEvent::HTTP  ;
+use AnyEvent::Handle  ;
+use AnyEvent::FastPing  ;
+# use AnyEvent::Watchdog;
+use Time::HiRes;
+use IO::AIO;
+use MIME::Base64;
+use IO::AIO  ;
+use Net::Interface;
+use Digest::MD6;
+use Digest::HMAC_MD6;
+use AnyEvent::MP  ;
+use Cache::Memcached::Fast  ;
+use List::Util  ;
+use Sort::XS;
+use Date::Calc;
+use Date::Calc::XS;
+use URL::Encode;
+use URL::Encode::XS;
+use URI::Escape::XS;
+use HTTP::Parser2::XS;
+use String::Numeric;
+use String::Numeric::XS;
+use XML::Fast;
+use Text::CSV_XS;
+use Bit::Vector;
+use Array::Shuffle;
+use Socket;
+
+

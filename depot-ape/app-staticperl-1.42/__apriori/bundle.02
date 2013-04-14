@@ -1,0 +1,37 @@
+
+static
+usepacklists
+
+strip pod
+strip ppi
+
+incglob *
+exclude /Devel/**
+exclude /ExtUtils/**
+exclude /Encode/??.*
+exclude /Encode/??/**
+exclude /PPI.pm
+exclude /PPI/**
+exclude /CPAN**
+
+exclude /HTTP/Parser2**
+
+
+exclude /Bloom**
+exclude /Module**
+
+# used in AE::HTTPD
+# exclude /Object**
+
+exclude /CGI**
+exclude /IPC**
+exclude /Pod**
+
+# exclude /Compress**
+exclude /TAP**
+exclude /Test/**
+exclude /Module/Build**
+exclude /Module/CoreList.pm
+exclude /unicore/Name.pl
+exclude /unicore/To/NFKCCF.pl
+exclude /unicore/Decomposition.pl

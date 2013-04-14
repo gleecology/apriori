@@ -1,0 +1,16 @@
+    
+perl-5.12.4/README
+    created Mon Feb  6 14:21:20 2012 by gleeco
+
+
+vanilla install
+.apriori/do.install should take care of things.
+
+NB
+* must install perl before apache/mod_perl
+* must run do.cpan_install.pl <module_list_file> after the apache install
+* Cache::Memcached::Fast was manually forced install.  The errors did not grok; ignored!
+* i installed this version after perl-5.8.9 which got mod_perl installed; so i did that one manually too. 
+
+
+

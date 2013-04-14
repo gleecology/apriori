@@ -1,0 +1,53 @@
+
+#
+# Cluster Settings
+#
+cluster:
+  name: ESS1
+
+http:
+  port: 40409 
+
+#
+# ideal settings for cluster size 3-10 
+#
+
+network:
+
+    # TODO:  some tuning params: 
+    #
+    # host: _non_loopback:ipv4
+
+    # tcp.keep_alive: true
+    # tcp.send_buffer_size: value in size setting format
+    # tcp.receive_buffer_size: 
+
+
+#
+# Gateway Settings
+#
+gateway:
+  recover_after_nodes: 1
+  recover_after_time: 5m
+  expected_nodes: 2
+
+#
+# Force all memory to be locked, forcing JVM to never swap
+#  (make sure to set MIN and MAX mem to the same value)
+#
+#bootstrap:
+#  mlockall: true
+
+#
+# Unicast Discovery (disable multicast)
+#
+discovery:
+  zen:
+    multicast.enabled: false
+
+#
+# devel setting; turn off 
+#
+common:
+  jna: DEBUG
+

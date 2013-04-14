@@ -1,0 +1,68 @@
+#!/bin/bash
+
+#
+# do.install auto-generated from /home/gleeco/opt/bin/despotic v.1.0 on Thu Feb 16 12:40:50 2012  
+#  this script is the main build script for the package
+#   It is intended as a generic placeholder to build however you see fit (eg. bash, perl, make, whatever!)
+#   as such, it should be left mod 0644 thus manually forcing the issue.  
+# 
+
+
+# DEPOT should be set in your ENV; ie.  export=DEPOT=/path/opt/depot
+#
+# mkdir -p $DEPOT/kyotocabinet-1.2.72/__apriori  $DEPOT/kyotocabinet-1.2.72/src
+
+if [ ! $DEPOT ]; then
+    echo "WARNING -- env DEPOT not set; quitting";
+    exit
+fi
+
+PKG=kyotocabinet-1.2.72
+DEST=$DEPOT/$PKG
+SRC=$PKG.tar.gz
+
+cd $DEST/src
+
+    #
+    # do you need to get the source? 
+    #
+    if [ ! -f $SRC ]; then 
+        wget http://fallabs.com/kyotocabinet/pkg/$SRC
+    fi
+
+    tar zxvf $SRC
+    cd  $DEST/src/$PKG
+
+    # prelim: copy over modified copies IF we want to avoid conflict with any other /usr/local/ usage. 
+    # ymmv, i found 2 copies of headers in /usr/local/include on ord25 which busted things. 
+    #
+    cp $DEST/__apriori/configure $DEST/src/$PKG/
+    cp $DEST/__apriori/configure.in $DEST/src/$PKG/
+
+
+    # 
+    # configure / build / install
+    #
+    OPTS=" --prefix=$DEST  "
+    echo   "./configure $OPTS "                     2>&1 |tee log.opts
+    ./configure --prefix=$DEST                     2>&1 |tee log.conf
+    make                                            2>&1 |tee log.make
+    make check                                      2>&1 |tee log.check
+    make install                                    2>&1 |tee log.install
+
+    # document the install in a log
+    for i in opts conf make check install; do
+        echo "----log.$i----"  >> LOG
+        cat log.$i             >> LOG
+    done
+
+    gzip LOG;
+    cp  LOG.gz $DEST/__apriori
+
+    cd $DEST
+    # 
+    mv $DEST/share/man $DEST/man
+
+    # clean up 
+   #  rm -rf $DEST/src/
+    

@@ -1,0 +1,147 @@
+#!/bin/bash
+
+#
+
+if [ ! $DEPOT ]; then
+    echo "WARNING -- env DEPOT not set; quitting";
+    exit
+fi
+
+PKG=apache_1.3.42
+DEST=$DEPOT/$PKG
+
+# apache package vars
+AP=apache_1.3.42
+AP_GZ=$AP.tar.gz
+AP_DIR=$DEST/src/$AP
+
+# NOTE: we should be starting from scratch 
+MP=mod_perl-1.31
+MP_GZ=$MP.tar.gz
+
+
+# main
+build_complete_webservice() {
+    if [ ! -d $DEST/src ]; then 
+	    echo "WHOA - first time? go get $MP_GZ and $AP_GZ";
+    fi;
+
+    cd $DEST/src/
+    if [ -f $MP_GZ ] && [ -f $AP_GZ ]; then
+        echo "found $MP_GZ and $AP_GZ; safe to proceed";
+    else
+	    echo "WHOA - first time? go get $MP_GZ and $AP_GZ";
+        exit 1;
+    fi
+
+    
+    rm -rf $MP $AP
+    tar zxf $AP_GZ
+    tar zxf $MP_GZ
+    build_mod_ipmagic
+    build_mod_deflate
+    build_mod_perl
+    build_apache
+}
+
+
+
+configure_apache() {
+    # seperate function since it's called more than once
+    ( CFLAGS="-O3 -funroll-loops -ffast-math -fomit-frame-pointer -fno-exceptions \
+        -DFAST_TIME -DBUFFERED_LOGS -DNO_GRACEFUL -DUSE_QUICK_LOG -DDYNAMIC_MODULE_LIMIT=0" \
+        cd $AP_DIR && /bin/bash ./configure --prefix=$DEST \
+        --activate-module=src/modules/extra/mod_deflate.o \
+        --activate-module=src/modules/extra/mod_ipmagic.c \
+        --activate-module=src/modules/perl/libperl.a \
+        --disable-module=actions \
+        --disable-module=asis \
+        --disable-module=autoindex \
+        --disable-module=imap \
+        --disable-module=include \
+        --disable-module=negotiation \
+        --disable-module=userdir \
+        --enable-module=expires \
+        --enable-module=ipmagic \
+        --enable-module=perl \
+        --enable-module=rewrite \
+        --enable-module=so \
+        --enable-module=proxy;
+    )
+    # HACK! - this 
+    ( cd $AP_DIR && 
+      for i in htdigest htpasswd logresolve; do 
+		sed -i 's/getline/apache_getline/' src/support/$i.c;
+	  done
+    );
+
+
+    
+}
+
+#############
+# mod_ipmagic
+#############
+
+build_mod_ipmagic() {
+    (
+    # TODO - where does this live? 
+        tar zxvf mod_netscaler_ipmagic-1.0.tgz;
+        cp mod_netscalar_ipmagic-1.0/mod_ipmagic.c $AP_DIR/src/modules/extra
+    )
+}
+
+
+
+#############
+# mod_deflate
+#############
+build_mod_deflate() {
+    DFLT=mod_deflate-1.0.21
+    tar zxvf $DFLT.tar.gz
+  ( cd  $DFLT
+      ./configure --with-apache=$AP_DIR
+      make
+  )
+}
+
+
+##########
+# mod_perl
+###########
+build_mod_perl() {
+    (
+        cd $DEST/src/$MP
+        perl Makefile.PL \
+            EVERYTHING=1 \
+            APACHE_SRC=$AP_DIR/src \
+            APACHE_PREFIX=$DEST \
+            PREP_HTTPD=1 \
+	        EXTRA_LIBS=/lib64:/usr/lib64 \
+            USE_APACI=1;
+	
+        make > log.make 2>&1
+        make install > log.install 2>&1
+    )
+}
+
+
+
+##############
+# apache (last
+##############
+build_apache() {
+    (
+        cd $AP_DIR
+        configure_apache
+        make > log.make 2>&1
+        make test > log.test 2>&1
+        make install > log.install 2>&1
+        cp log.install $DEST/.log.install
+        rm -rf $DEST/icons  $DEST/htdocs  $DEST/proxy $DEST/logs $DEST/cgi-bin
+    )
+}
+
+
+build_complete_webservice;
+

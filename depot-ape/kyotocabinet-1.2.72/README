@@ -1,0 +1,11 @@
+    
+kyotocabinet-1.2.72/README
+    created Thu Feb 16 12:40:50 2012
+
+compilation orig. on ord25 was a PitA b/c of 2 files in src distro: 
+    configure
+    configure.in
+
+    ...both of which prepend /usr/local for headers and libs.
+    As it were, there were already 2 versions found over there.
+

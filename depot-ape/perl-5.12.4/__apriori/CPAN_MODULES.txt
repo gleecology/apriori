@@ -1,0 +1,131 @@
+# 
+#  this is the CPAN module list of what *should* be installed.
+#  nb: this lives in *each* perl installation, so no magic, just need to update manually :-)
+#
+#
+#
+
+# NB: these are part of distro 
+# utf8  
+# Fcntl  
+# POSIX  
+# Socket  
+# Benchmark  
+
+# compress needed prior to socket
+Compress::Zlib  
+
+Config  
+Errno  
+Encode  
+Getopt::Long  
+Digest::MD5  
+Time::ParseDate  
+Encode::Unicode  
+
+YAML
+YAML::XS
+Scalar::Util  
+LWP
+
+
+EV  
+EV::Loop::Async  
+Crypt::Twofish2  
+Coro
+Array::Heap  
+Convert::Scalar  
+Compress::LZF  
+JSON::XS  
+
+
+Linux::Inotify2  
+common::sense  
+Guard  
+Async::Interrupt  
+
+
+AnyEvent  
+AnyEvent::Coro
+AnyEvent::AIO  
+AnyEvent::HTTP  
+AnyEvent::Handle  
+AnyEvent::Impl::EV  
+AnyEvent::Impl::Perl  
+AnyEvent::Socket  
+AnyEvent::Util  
+AnyEvent::FastPing  
+IO::AIO  
+
+
+# dep chain
+Module::Build
+Object::Event
+AnyEvent::HTTPD  
+
+# dep chain some force may be needed
+# MD6 tests fail w/o LWP installed
+# Net::Interface might need a manual force too...
+Net::Interface
+Digest::MD6
+Digest::HMAC_MD6
+AnyEvent::MP  
+
+
+# assumes that the libcurl pkg is installed; ideally in depot for curl-configa
+WWW::Curl
+AnyEvent::Curl::Multi
+
+# sometimes a test fails (magic?) so force may be needed. 
+Cache::Memcached::Fast  
+List::Util  
+URI::_generic
+URI::http
+
+Sort::XS
+Date::Calc
+Date::Calc::XS
+
+URL::Encode
+URL::Encode::XS
+
+URI::Escape::XS
+
+Net::IP
+# this fails w/o gmp.h
+#Net::IP::XS
+
+HTTP::Parser2::XS
+
+String::Numeric
+String::Numeric::XS
+
+# 
+# XML::Bare
+XML::Fast
+
+Text::CSV_XS
+
+Bit::Vector
+
+# this is a mod_perl-1.x thing 
+# really, apache+mod_perl+perl all need to go together. 
+#
+Apache::Log
+
+App::Ack
+
+# Array::Shuffle: xs version of fischer-yates in-place shuffule
+Array::Shuffle
+
+Devel::NYTProf
+
+# lots of deps. 
+Perl::Critic
+
+# many 
+ElasticSearch
+ElasticSearch::Transport::AECurl
+
+
+
